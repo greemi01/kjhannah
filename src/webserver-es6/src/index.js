@@ -16,6 +16,9 @@ import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
 import { constants } from 'fs';
+import { StatusCodes } from 'http-status-codes';
+import { getReasonPhrase } from 'http-status-codes';
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 let httpPort = 8080;
@@ -47,6 +50,13 @@ async function setupDb() {
         }
     }
 }
+class HttpError extends Error {
+    constructor(status, message) {
+        super(message || 'Error');
+        this.status = status;
+    }
+}
+
 
 function webSiteFile(f) {
     return htmlPublic + '/' + f;
@@ -57,21 +67,40 @@ function dataFile(f) {
 }
 
 
-function pageNotFound(res) {
-    res.status(404).end();
-
-    /*
-    try {
-        let page = await getWebsitePage(1, 404, null, null);
-        res.setHeader('content-type', 'text/html; charset=utf8');
-        return res.status(404).send(page);
-    } catch {
-        res.setHeader('content-type', 'text/html; charset=utf8');
-        return res.status(404).send("Page not found");
-        // return res.status(404).end();
+function securityHeaders(req, res, next) {
+    if (isProduction) {
+        res.setHeader('Strict-Transport-Security', 'max-age=31536000 ; includeSubDomains');
     }
-    */
+    // the 'data:' is needed because bootstrap includes some inline images (for the menu bar icon)
+    // res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' data:; script-src 'nonce-abAC'");
+    res.setHeader('X-Frame-Options', "SAMEORIGIN");
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    next();
+}
 
+
+async function fileExists(f) {
+    try {
+        await fs.access(f, constants.R_OK);
+        return true;
+    } catch (err) {
+        return false;
+    }
+}
+
+
+
+async function returnWebsitePage(res, m1, m2, var1, val1) {
+    try {
+        let page = await getWebsitePage(m1, m2, var1, val1);
+        res.setHeader('content-type', 'text/html; charset=utf8');
+        res.send(page);
+    } catch {
+        throw new HttpError(StatusCodes.NOT_FOUND);
+
+    }
 }
 
 async function getWebsitePage(m1, m2, var1, val1) {
@@ -94,87 +123,57 @@ async function getWebsitePage(m1, m2, var1, val1) {
     return page;
 }
 
-function securityHeaders(req, res, next) {
-    if (isProduction) {
-        res.setHeader('Strict-Transport-Security', 'max-age=31536000 ; includeSubDomains');
-    }
-    // the 'data:' is needed because bootstrap includes some inline images (for the menu bar icon)
-    // res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' data:; script-src 'nonce-abAC'");
-    res.setHeader('X-Frame-Options', "SAMEORIGIN");
-    res.setHeader('Referrer-Policy', 'no-referrer');
-    res.setHeader('X-XSS-Protection', '1; mode=block');
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    next();
-}
-
-
-
-async function returnWebsitePage(res, m1, m2, var1, val1) {
-    try {
-        let page = await getWebsitePage(m1, m2, var1, val1);
-        res.setHeader('content-type', 'text/html; charset=utf8');
-        res.send(page);
-    } catch {
-        return pageNotFound(res);
-    }
-}
-
-async function fileExists(f) {
-    try {
-        await fs.access(f, constants.R_OK);
-        return true;
-    } catch (err) {
-        return false;
-    }
-}
-
 
 const app = express();
 
 app.use(securityHeaders);
 
 app.get('/', async (req, res) => {
-    // console.log(`get /  ${JSON.stringify(req.query)}`);
     await returnWebsitePage(res, '1', INDEX_PAGE);
 });
 
 app.get('/index.html', async (req, res) => {
-    // console.log(`get /  ${JSON.stringify(req.query)}`);
     await returnWebsitePage(res, '1', INDEX_PAGE);
 });
 
 app.get('/page', async (req, res) => {
-    // console.log(`get page ${JSON.stringify(req.query)}`);
     let m = (req.query.p ?? '').match(/^(\d+)_(\d+)$/);
     if (!m) {
-        return pageNotFound(res);
+        throw new HttpError(StatusCodes.NOT_FOUND);
     }
 
     return await returnWebsitePage(res, m[1], m[2]);
 });
 
 app.get('/:page', async function (req, res, next) {
-    let filePath = req.path;
     const page = req.params.page;
-    console.log(page);
     if (page in pageNames) {
         return await returnWebsitePage(res, null, page);
     } else {
         return next();
     }
-}) ;
-
-
+});
 
 app.use(express.static(htmlPublic, {
     setHeaders: (res, filePath) => {
         res.setHeader('Cache-Control', 'max-age=86400'); // cache for 1 day
     }
-})) ;
+}));
+
 
 app.use((err, req, res, next) => {
     console.error(err.message);
-    res.status(err.status || 500).send('error');
+    const code = err.status || 500;
+
+    function safeReasonPhrase(code) {
+        try {
+            return getReasonPhrase(code);
+        } catch {
+            return 'Unknown Status';
+        }
+    }
+
+    res.status(code).send(safeReasonPhrase(code));
 });
 
 
