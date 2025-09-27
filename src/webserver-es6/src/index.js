@@ -1,5 +1,4 @@
-'use strict';
-
+import { match } from 'path-to-regexp';
 /*
 to update certificate
 sudo systemctl stop kjhanna
@@ -37,24 +36,28 @@ let emailEnabled = false; // if true, need to fix AWS
 let pageNames = {};
 
 const htmlPublic = path.resolve(`${__dirname}/../../../public_html`);
-
+const dataFolder = path.resolve(`${__dirname}/../../../data`);
 
 async function setupDb() {
-    let d = await fs.readFile(webSiteFile('data/db/pages.csv'), 'utf8');
+    let d = await fs.readFile(dataFile('db/pages.csv'), 'utf8');
     for (let line of d.split(/\n/)) {
-        let m = line.match(/([\d]+),(.*)/)
+        let m = line.match(/^([^,]+),(.*)/)
         if (m) {
             pageNames[m[1]] = m[2];
         }
     }
 }
+
 function webSiteFile(f) {
     return htmlPublic + '/' + f;
 }
 
+function dataFile(f) {
+    return dataFolder + '/' + f;
+}
+
 
 function pageNotFound(res) {
-    addSecurityHeaders(res);
     res.status(404).end();
 
     /*
@@ -72,8 +75,14 @@ function pageNotFound(res) {
 }
 
 async function getWebsitePage(m1, m2, var1, val1) {
-    let fn = `data/menu${m1}_${m2}.html`;
-    let fileText = await fs.readFile(webSiteFile(fn), 'utf8');
+    let fn;
+    if (m1) {
+        fn = `menu${m1}_${m2}.html`;
+    } else {
+        fn = `${m2}.html`;
+    }
+
+    let fileText = await fs.readFile(dataFile(fn), 'utf8');
 
     let page = template.replace('{%content%}', fileText);
     page = page.replace('{%name%}', pageNames[m2] ?? `no idea ${m1} ${m2}`);
@@ -85,7 +94,7 @@ async function getWebsitePage(m1, m2, var1, val1) {
     return page;
 }
 
-function addSecurityHeaders(res) {
+function securityHeaders(req, res, next) {
     if (isProduction) {
         res.setHeader('Strict-Transport-Security', 'max-age=31536000 ; includeSubDomains');
     }
@@ -95,11 +104,14 @@ function addSecurityHeaders(res) {
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('X-XSS-Protection', '1; mode=block');
     res.setHeader('X-Content-Type-Options', 'nosniff');
+    next();
 }
+
+
+
 async function returnWebsitePage(res, m1, m2, var1, val1) {
     try {
         let page = await getWebsitePage(m1, m2, var1, val1);
-        addSecurityHeaders(res);
         res.setHeader('content-type', 'text/html; charset=utf8');
         res.send(page);
     } catch {
@@ -107,14 +119,19 @@ async function returnWebsitePage(res, m1, m2, var1, val1) {
     }
 }
 
+async function fileExists(f) {
+    try {
+        await fs.access(f, constants.R_OK);
+        return true;
+    } catch (err) {
+        return false;
+    }
+}
+
+
 const app = express();
 
-/*
-app.use(express.json());
-app.use(express.urlencoded({
-    extended: true
-}));
-*/
+app.use(securityHeaders);
 
 app.get('/', async (req, res) => {
     // console.log(`get /  ${JSON.stringify(req.query)}`);
@@ -136,51 +153,30 @@ app.get('/page', async (req, res) => {
     return await returnWebsitePage(res, m[1], m[2]);
 });
 
-let OK_START = ['/bootstrap/', '/images/', '/css/'];
-
-app.get('*', async function (req, res) {
+app.get('/:page', async function (req, res, next) {
     let filePath = req.path;
-
-
-    if (filePath === '/favicon.ico') {
-        filePath = '/images/favicon.png';
+    const page = req.params.page;
+    console.log(page);
+    if (page in pageNames) {
+        return await returnWebsitePage(res, null, page);
+    } else {
+        return next();
     }
+}) ;
 
-    if (!OK_START.some(ok => filePath.startsWith(ok)) || filePath.includes('..')) {
-        console.log(`Bad 'get *' request: ${req.path}`);
-        return pageNotFound(res);
+
+
+app.use(express.static(htmlPublic, {
+    setHeaders: (res, filePath) => {
+        res.setHeader('Cache-Control', 'max-age=86400'); // cache for 1 day
     }
+})) ;
 
-    let file = path.join(htmlPublic, filePath);
-    if (file.indexOf(htmlPublic + path.sep) !== 0) {
-        // might not be needed ... but being paranoid
-        return pageNotFound(res);
-    }
-
-    addSecurityHeaders(res);
-    res.setHeader('Cache-Control', 'max-age=86400');
-    res.sendFile(file, (err) => {
-        if (err) {
-            if (err.code === 'ECONNABORTED') {
-                // console.warn('Client aborted the request');
-            } else {
-                console.error('File send error:', err);
-                if (!res.headersSent) {
-                    res.status(500).send('Internal Server Error');
-                }
-            }
-        }
-    });
+app.use((err, req, res, next) => {
+    console.error(err.message);
+    res.status(err.status || 500).send('error');
 });
 
-async function fileExists(f) {
-    try {
-        await fs.access(f, constants.R_OK);
-        return true;
-    } catch (err) {
-        return false;
-    }
-}
 
 async function main() {
     await setupDb();
@@ -199,8 +195,6 @@ async function main() {
 
     template = await fs.readFile(webSiteFile(templateFile), 'utf8');
 
-    // emailEnabled = emailEnabled && httpPort !== 8080;
-
     if (isProduction) {
         try {
             let privateKey = await fs.readFile(`${keyFolder}/privkey.pem`, 'utf8');
@@ -218,7 +212,6 @@ async function main() {
         console.log('Started http on port ' + httpPort);
     }
 }
-
 
 
 main();
