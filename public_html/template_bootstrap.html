@@ -1,0 +1,93 @@
+<!DOCTYPE html >
+
+<html lang='en'>
+  <head>
+
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <meta name='description' content='KJ Hannah Greenberg'>
+    <title>KJ Hannah Greenberg</title>
+
+    <!-- bootstrap -->
+    <link href='bootstrap/css/bootstrap.min.css' rel='stylesheet'>
+    <link href='css/style.css' rel='stylesheet' type='text/css' media='screen'>
+  </head>
+
+  <body>
+
+    <section class='container wrapper'>
+      <div id='header' class='col-md-12'>
+	<h1 id='kjhannah'>KJ Hannah Greenberg</h1>
+      </div>
+
+      <!--  bg-light -->
+      <nav class='navbar navbar-expand-lg navbar-light d-block
+		  d-md-none -lg-none titleBorder'
+	         >
+	<div class='container-fluid' >
+	  <div class='title_nav'>
+	    {%name%}
+	  </div>
+          <a class='navbar-brand' href='#'></a>
+          <button class='navbar-toggler' type='button' data-bs-toggle='collapse' data-bs-target='#navbarSupportedContent' aria-controls='navbarSupportedContent' aria-expanded='false' aria-label='Toggle navigation'>
+            <span class='navbar-toggler-icon'></span>
+          </button>
+          <div class='collapse navbar-collapse' id='navbarSupportedContent'>
+            <ul class='navbar-nav me-auto mb-2 mb-lg-0'>
+              <!-- <li class='nav-item'>
+		<a class='nav-link active' aria-current='page' href='/'>Home</a>
+              </li> -->
+
+	      <li  class='nav-item'><a href='page?p=1_86'>Books</a></li>
+	      <li  class='nav-item'><a href='page?p=1_55'>Creative Nonfiction</a></li>
+	      <li  class='nav-item'><a href='page?p=1_56'>Fiction</a></li>
+	      <li  class='nav-item'><a href='page?p=1_57'>Poetry</a></li>
+	      <li  class='nav-item'><a href='page?p=1_36'>Book Chapters</a></li>
+	      <li  class='nav-item'><a href='page?p=1_14'>Blogs and Columns</a></li>
+	      <li  class='nav-item'><a href='page?p=1_125'>Images</a></li>
+	      <li  class='nav-item'><a href='page?p=1_503'>Forthcoming Work</a></li>
+              <li  class='nav-item'><a href='page?p=1_92'>FAQ about KJ Hannah Greenberg</a></li>
+
+            </ul>
+          </div>
+	</div>
+      </nav>
+
+
+      <div id='page' class='col-md-12'>
+	<div class='row'>
+          <div class='col-md-8'>
+            <div class='post col-md-12'>
+              <h1 id='t1' class='title'>{%name%}</h1>
+	      {%content%}
+	    </div>
+          </div>
+
+          <div id='sidebar' class='col-md-4 d-none d-sm-block d-sm-none d-md-block'>
+            <h2>Menu</h2>
+            <ul>
+              <li><a href='page?p=1_86'>Books</a></li>
+	      <li><a href='page?p=1_55'>Creative Nonfiction</a></li>
+	      <li><a href='page?p=1_56'>Fiction</a></li>
+	      <li><a href='page?p=1_57'>Poetry</a></li>
+	      <li><a href='page?p=1_36'>Book Chapters</a></li>
+	      <li><a href='page?p=1_14'>Blogs and Columns</a></li>
+	      <li><a href='page?p=1_125'>Images</a></li>
+	      <li><a href='page?p=1_503'>Forthcoming Work</a></li>
+              <li><a href='page?p=1_92'>FAQ about KJ Hannah Greenberg</a></li>
+            </ul>
+	  </div>
+	</div>
+	<div id='menuclear'><br></div>
+      </div>
+
+      <div id='footer' class='col-md-12'>
+	<p>&#169; KJ Hannah Greenberg</p>
+      </div>
+
+    </section>
+
+    <!-- bootstrap -->
+    <script src='bootstrap/js/bootstrap.bundle.min.js'></script>
+  </body>
+</html>

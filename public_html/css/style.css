@@ -1,0 +1,565 @@
+:root {
+    --textColor: #61492D;
+}
+
+body {
+    margin: 0px;
+    padding: 0;
+    /* #B29269 */
+    /* color is bottom outer wrapper -  #64d43d*/
+    /* img01.jpg is upper outer wrapper - 68ded4  */
+    background:   #64d43d  url(img01.jpg) repeat-x left top;
+    font-size: 13px;
+    text-align: justify;
+}
+
+body, th, td, input, textarea, select, option {
+    font-family: "Trebuchet MS", "Times New Roman", Arial, Times, serif;
+    color: var(--textColor);
+}
+
+
+h1, h2, h3, h4, .title_nav {
+    font-family: Georgia, "Times New Roman", Times, serif;
+    font-weight: normal;
+    color: #80614D;
+}
+
+h1 {
+    letter-spacing: -2px;
+    font-size: 3em;
+}
+
+h2 {
+    letter-spacing: -1px;
+    font-size: 2em;
+}
+
+h3 {
+    font-size: 1.5em;
+}
+
+h4 {
+    font-size: 1em;
+}
+
+h5 {
+    font-size: 120%;
+}
+
+
+
+.fontPlusOne {
+    font-size: 120%;
+}
+
+blockquote {
+    margin: 15px 0px;
+    padding: 5px 7px 5px 40px;  	
+    font-weight: normal;
+    font-size: 17px;
+    line-height: 1.6em;
+    font-style: italic;
+    font-family: Georgia, 'Times New Roman', Times, serif;		
+    color: #B29269;	
+    border: 1px solid #E3D1BA; 
+    background: #F5EFE9;
+}
+
+blockquote p, blockquote ul, blockquote ol {
+    line-height: normal;
+    font-style: italic;
+}
+
+a {
+    color: #85612E;
+    text-decoration:none;
+}
+
+a:hover {
+    color: #85612E;
+    text-decoration:underline;
+}
+
+hr {
+    display: none;
+}
+
+
+/* Header */
+
+#header {
+    /* width: 780px; */
+    height: 150px;
+    margin: 0 auto;
+    padding: 0px 0 0 0;
+    background: #5C3F1C;
+}
+
+#header h1, #header p {
+    /* padding-bottom: 10px; */
+    margin: 0px;
+}
+
+#header h1 {
+    float: left;
+    font-size: 52px;
+    padding: 57px 0 0 15px;
+    color: #F79F1A;
+}
+
+#header p {
+    float: left;
+    padding: 70px 0 0 10px;
+    font-size: 26px;
+    font-weight: normal;
+    font-family: Georgia, "Times New Roman", Times, serif;
+    color: #C4AC8D;
+    text-transform: lowercase;
+}
+
+#header a {
+    text-decoration: none;
+    color: #F79F1A;
+}
+
+/* Page */
+
+#page {
+    /* width: 760px; */
+    margin: 0 auto;
+    padding-top: 20px;
+}
+
+/* Content */
+
+
+@media (min-width: 768px) {
+    .img1 {
+	margin-left: 12px; margin-right: 0px; border: black 2px solid;
+    }
+    
+    .img2 {
+	margin-left: 0px; margin-right: 0px; border: black 1px solid;
+	
+    }
+}
+
+@media (max-width: 768px) {
+    #header h1 {
+	font-size: 32px !important;
+    }
+    #carousel1 {
+	display: none !important;
+    }
+    #t1 {
+	display: none !important;
+    }
+
+    .img1 {
+	display: none !important;
+    }
+    
+    .img2 {
+	display: none !important;
+    }
+}
+
+
+
+
+
+/*   main content region */
+.post {
+    /* padding: 0px 16px 0 0; */
+}
+
+/* right was 20px */
+.title {
+    padding: 0 20px 5px 0px;
+    font-size: 26px;
+    margin-right: 0px;
+}
+
+.title, .titleBorder {
+    border-bottom: 2px #CFBAA1 solid;
+}
+
+
+.title a {
+    text-decoration: none;
+    color: #B29269;
+}
+
+.container-fluid {
+    background: white;
+}
+
+.title_nav {
+    font-size: 26px;
+    margin-right: 0px;
+}
+
+.pagetitle {
+}
+
+.byline {
+    margin: -25px 20px 0 0px;
+    color: #B29269;
+}
+
+.meta {
+    text-align: left;
+    color: #B29269;
+    padding: 5px 20px 5px 20px;
+    font-family: Georgia, "Times New Roman", Times, serif;
+    font-size: 12px;
+    margin-right: 20px;
+    border: 1px solid #E3D1BA; 
+    background: #F5EFE9;
+}
+
+.meta .more {
+}
+
+.meta .comments {
+}
+
+.meta a {
+    color: #B29269;
+}
+
+.navigation {
+}
+
+.alignleft {
+    float: left;
+}
+
+.alignright {
+    float: right;
+}
+
+.posts {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    line-height: normal;
+}
+
+.posts li {
+}
+
+.posts h3 {
+    margin: 0;
+    font-weight: bold;
+}
+
+.posts p {
+    margin: 0;
+    line-height: normal;
+}
+
+.posts a {
+}
+
+/* padding: 17px 20px 5px 0px; */
+.entry {
+    margin: 0;
+    padding: 17px 5px 5px 0px;
+}
+
+.last {
+    border: none;
+}
+
+/* Sidebar */
+
+#sidebar {
+    /* background: red; */ 
+    border-left: #B29269 solid 1px;
+/*	float: right;
+	width: 230px;
+	margin-bottom: 10px;
+	color: #B29269; */
+}
+
+#sidebar ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+#sidebar li {
+    margin: 0;
+    padding: 0;
+}
+
+#sidebar li ul {
+    margin: 0 0 20px 30px;
+    padding: 0;
+}
+
+
+/*	background: url(img08.gif) no-repeat left 50%; */
+
+#sidebar li  {
+    margin: 0 0 0 10px;
+    line-height: 35px;
+    border-bottom: 1px #CFBAA1 solid;
+}
+
+#sidebar h2 {
+    margin: 0 0 0 0px; 
+    height: 35px;
+    font-size: 18px;
+    color: #80614D;
+    border-bottom: 2px #CFBAA1 solid;
+}
+
+#sidebar a {
+    text-decoration: none;
+}
+
+#sidebar a:hover {
+    text-decoration: none;
+}
+
+/* Search */
+
+#search input {
+    display: none;
+}
+
+#search input#s {
+    display: block;
+    width: 230px;
+    padding: 2px 5px;
+    border: 1px solid #3DD1FF;
+    background: #FFFFFF url(img05.gif) repeat-x;
+}
+
+#search br {
+    display: none;
+}
+
+/* Calendar */
+
+#calendar {
+}
+
+#calendar h2 {
+    margin-bottom: 15px;
+}
+
+#calendar table {
+    width: 80%;
+    margin: 0 auto;
+    text-align: center;
+}
+
+#calendar caption {
+    width: 100%;
+    text-align: center;
+}
+
+#next {
+    text-align: right;
+}
+
+#prev {
+    text-align: left;
+}
+
+/* Footer */
+
+#footer {
+    /* width: 780px; */
+    /* margin: 0 auto; */
+    height: 50px;
+    text-align: center;
+    font-size: 10px;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #FFFFFF;
+    background: #5C3F1C;
+    /* margin-bottom: 27px; */
+}
+
+#footer p {
+    padding-top: 15px;
+}
+
+#footer p a {
+    color: #CFBAA1;
+}
+
+img { border: none; }
+
+img.left {
+    float: left;
+    margin: 3px 20px 30px 0px;
+}
+
+img.right {
+    float: right;
+    margin: 3px 0px 10px 30px;
+}
+
+.rightborder {
+    border-right: 1px solid #000000;
+}
+
+.ljust {
+    text-align: left !important;
+}
+
+table.bookpicture {
+    margin-left: 12px;  /* make sure any text coming from the left leaves some space and does not come all the way*/
+    border-spacing: 0px;
+    border-collapse: separate;    
+    float: right;
+    width: auto;
+}
+
+
+.bookpicture td  {
+    padding: 0;
+    text-align: right;
+    font-size: xx-small;
+}
+
+.bookpicture img {
+    margin-right: 0px;
+    border: black 2px solid;
+    width: 300px;
+}
+
+.publications {
+    font-size: 15;
+    font-weight: bold;
+    margin: 20px 0px 7px 0px;
+    color: var(--textColor);
+}
+
+/* top right bottom left */
+
+.publications p {
+    font-size: 13px;
+    font-weight: normal;
+    margin: 0px 0 5px 0px;
+    color: var(--textColor);
+}
+
+.publications p:first-of-type {
+    margin: 5px 0 5px 0px;
+}
+
+.publications img {
+    float: right;
+    padding: 0 0 0 7px;
+}
+
+.carousel1 {
+    position:relative !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.container.wrapper {
+    margin-top: 15px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background: #FFF !important;
+}
+
+.navbar {
+    /* background: none !important; */
+    /* position: absolute !important; */
+}
+
+.navbar-toggler {
+    background: #FFF !important;
+}
+.nav-item {
+    padding: 5px !important;
+}
+
+.bookGrid {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.book {
+    width: 200px;
+
+    /* flex: 1; */
+    /* top right bottom left */
+    padding: 20px 20px 20px 20px;
+    /* border: 1px solid blue;  */
+
+}
+
+.book p  {
+    /* font-style: italic; */
+    text-align: center;
+}
+
+.book a {
+
+}
+
+.book img {
+    width: 160px;
+    height: 230px;
+    border: 1px solid #E3D1BA;
+}
+
+.keepAspect {
+    height: auto !important;
+}
+
+.center {
+  text-align: center;
+  width: 100%;
+}
+
+#kjhannah {
+    color: #3ec17f !important;
+    text-align: left;
+}
+
+#menuclear {
+    clear:both;
+}
+
+#player {
+ height: 40px;
+ margin-left: 20px;
+}
+
+#attribution {
+ height: 40px;
+ margin-left: 0px;
+}
+
+.parent {
+    margin-top: 15px;
+    margin-bottom: 0px;
+    float: right;
+}
+
+.child {
+  display: inline-block;
+  float: left;
+}
+
+#ASong {
+  padding: 0;
+  border: none;
+  background: none;
+  width: 15px;
+}
+
+#attribution {
+  font-size: 80%;
+}

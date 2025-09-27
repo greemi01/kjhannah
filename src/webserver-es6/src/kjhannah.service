@@ -1,0 +1,20 @@
+# sudo cp kjhannah.service /etc/systemd/system
+# sudo systemctl enable kjhannah.service 
+# sudo systemctl start kjhannah.service 
+
+[Unit]
+Description="KJHannah Website"
+
+[Service]
+ExecStart=/usr/bin/node index.js
+WorkingDirectory=/home/ubuntu/code/WebSite/src/webserver-es6/src
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=KJHannah
+Environment=NODE_ENV=production PORT=8080
+
+[Install]
+WantedBy=multi-user.target
+
