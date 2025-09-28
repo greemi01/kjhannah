@@ -107,7 +107,7 @@ async function returnWebsitePage(res, m1, m2, var1, val1) {
         }
 
         if (pageData.page_route && m1) {
-            res.redirect(StatusCodes.PERMANENT_REDIRECT, pageData.page_route);
+            res.redirect(StatusCodes.PERMANENT_REDIRECT, "/" + pageData.page_route);
             return;
         }
         let page = await getWebsitePage(pageData, var1, val1);
@@ -199,7 +199,7 @@ app.use(async (err, req, res, next) => {
 
     try {
         console.log(req.path)
-        return await returnWebsitePage(res, null, "page_not_found");
+        return await returnWebsitePage(res, null, "/page_not_found");
     } catch (err) {
         console.log("Redirect to error failed");
         console.log(err);
