@@ -11,7 +11,7 @@ import util from 'util';
 import path from 'path';
 import http from 'http';
 import https from 'https';
-
+import { parse } from "csv-parse/sync";
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
@@ -31,25 +31,27 @@ let isProduction;
 const templateFile = 'template_bootstrap.html';
 let template;
 
-
-// const AWS = require('aws-sdk');
-// AWS.config.update({ region: 'eu-central-1' });
-let emailEnabled = false; // if true, need to fix AWS
-
-let pageNames = {};
+const PAGE_INFO = new Map();
 
 const htmlPublic = path.resolve(`${__dirname}/../../../public_html`);
 const dataFolder = path.resolve(`${__dirname}/../../../data`);
 
 async function setupDb() {
-    let d = await fs.readFile(dataFile('db/pages.csv'), 'utf8');
-    for (let line of d.split(/\n/)) {
-        let m = line.match(/^([^,]+),(.*)/)
-        if (m) {
-            pageNames[m[1]] = m[2];
+    const rows = parse(await fs.readFile(dataFile('db/pages.csv'), "utf8"), {
+        columns: true,
+        skip_empty_lines: true,
+    });
+    for (const row of rows) {
+        if (row.page_number) {
+            PAGE_INFO.set(row.page_number, row);
+        }
+        if (row.page_route) {
+            PAGE_INFO.set(row.page_route, row);
         }
     }
 }
+
+
 class HttpError extends Error {
     constructor(status, message) {
         super(message || 'Error');
@@ -94,7 +96,17 @@ async function fileExists(f) {
 
 async function returnWebsitePage(res, m1, m2, var1, val1) {
     try {
-        let page = await getWebsitePage(m1, m2, var1, val1);
+        const pageData = PAGE_INFO.get(m2);
+        if (!pageData) {
+            throw new HttpError(StatusCodes.NOT_FOUND);
+        }
+
+        if (pageData.page_route && m1) {
+            console.log("should redirect");
+            res.redirect(StatusCodes.PERMANENT_REDIRECT, pageData.page_route) ;
+            return ;
+        }
+        let page = await getWebsitePage(pageData, var1, val1);
         res.setHeader('content-type', 'text/html; charset=utf8');
         res.send(page);
     } catch {
@@ -103,22 +115,22 @@ async function returnWebsitePage(res, m1, m2, var1, val1) {
     }
 }
 
-async function getWebsitePage(m1, m2, var1, val1) {
+async function getWebsitePage(pageData, var1, val1) {
     let fn;
-    if (m1) {
-        fn = `menu${m1}_${m2}.html`;
+    if (pageData.page_route) {
+        fn = `${pageData.page_route}.html`;
     } else {
-        fn = `${m2}.html`;
+        fn = `menu1_${pageData.page_number}.html`;
     }
 
     let fileText = await fs.readFile(dataFile(fn), 'utf8');
 
     let page = template.replace('{%content%}', fileText);
-    page = page.replace('{%name%}', pageNames[m2] ?? `no idea ${m1} ${m2}`);
-    page = page.replace('{%name%}', pageNames[m2] ?? `no idea ${m1} ${m2}`);
+
+    page = page.replaceAll('{%name%}', pageData.page_title);
 
     if (var1) {
-        page = page.replace(`{%${var1}%}`, val1);
+        page = page.replaceAll(`{%${var1}%}`, val1);
     }
     return page;
 }
@@ -147,7 +159,7 @@ app.get('/page', async (req, res) => {
 
 app.get('/:page', async function (req, res, next) {
     const page = req.params.page;
-    if (page in pageNames) {
+    if (PAGE_INFO.has(page)) {
         return await returnWebsitePage(res, null, page);
     } else {
         return next();
@@ -156,7 +168,7 @@ app.get('/:page', async function (req, res, next) {
 
 app.use(express.static(htmlPublic, {
     setHeaders: (res, filePath) => {
-        res.setHeader('Cache-Control', 'max-age=86400'); // cache for 1 day
+        res.setHeader('Cache-Control', 'max-age=86400');
     }
 }));
 
@@ -173,6 +185,7 @@ app.use((err, req, res, next) => {
         }
     }
 
+    // Direct to the error page if possible instead
     res.status(code).send(safeReasonPhrase(code));
 });
 
