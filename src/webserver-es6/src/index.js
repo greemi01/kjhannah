@@ -43,9 +43,15 @@ async function setupDb() {
     });
     for (const row of rows) {
         if (row.page_number) {
+            if (PAGE_INFO.has(row.page_number)) {
+                throw new Error(`Duplicate page number ${row.page_number}`);
+            }
             PAGE_INFO.set(row.page_number, row);
         }
         if (row.page_route) {
+            if (PAGE_INFO.has(row.page_route)) {
+                throw new Error(`Duplicate page route ${row.page_route}`);
+            }
             PAGE_INFO.set(row.page_route, row);
         }
     }
