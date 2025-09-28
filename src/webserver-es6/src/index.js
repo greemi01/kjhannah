@@ -170,7 +170,9 @@ app.get('/:page', async function (req, res, next) {
 
 // filter out probes to .well-known
 app.use((req, res, next) => {
-    if (req.path.startsWith("/.well-known/")) {
+    if (req.path.startsWith("/.well-known/") ||
+        req.path.startsWith("/favicon.ico")
+) {
         return res.sendStatus(404);
     }
     next();
@@ -196,6 +198,7 @@ app.use(async (err, req, res, next) => {
     }
 
     try {
+        console.log(req.path)
         return await returnWebsitePage(res, null, "page_not_found");
     } catch (err) {
         console.log("Redirect to error failed");
