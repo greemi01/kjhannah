@@ -103,8 +103,8 @@ async function returnWebsitePage(res, m1, m2, var1, val1) {
 
         if (pageData.page_route && m1) {
             console.log("should redirect");
-            res.redirect(StatusCodes.PERMANENT_REDIRECT, pageData.page_route) ;
-            return ;
+            res.redirect(StatusCodes.PERMANENT_REDIRECT, pageData.page_route);
+            return;
         }
         let page = await getWebsitePage(pageData, var1, val1);
         res.setHeader('content-type', 'text/html; charset=utf8');
@@ -116,14 +116,12 @@ async function returnWebsitePage(res, m1, m2, var1, val1) {
 }
 
 async function getWebsitePage(pageData, var1, val1) {
-    let fn;
-    if (pageData.page_route) {
-        fn = `${pageData.page_route}.html`;
-    } else {
-        fn = `menu1_${pageData.page_number}.html`;
-    }
+    let fn1 = dataFile(`${pageData.page_route}.html`);
+    let fn2 = dataFile(`menu1_${pageData.page_number}.html`);
 
-    let fileText = await fs.readFile(dataFile(fn), 'utf8');
+    const useFile = await fileExists(fn1) ? fn1 : fn2;
+
+    let fileText = await fs.readFile(useFile, 'utf8');
 
     let page = template.replace('{%content%}', fileText);
 
@@ -166,16 +164,39 @@ app.get('/:page', async function (req, res, next) {
     }
 });
 
+// filter out probes to .well-known
+app.use((req, res, next) => {
+    if (req.path.startsWith("/.well-known/")) {
+        return res.sendStatus(404);
+    }
+    next();
+});
+
 app.use(express.static(htmlPublic, {
     setHeaders: (res, filePath) => {
         res.setHeader('Cache-Control', 'max-age=86400');
     }
 }));
 
+app.use((req, res) => {
+    // not found should throw error for to get to default error handler
+    throw new HttpError(StatusCodes.NOT_FOUND);
+});
 
-app.use((err, req, res, next) => {
-    console.error(err.message);
+app.use(async (err, req, res, next) => {
+    // send all else to page_not_found if possible
     const code = err.status || 500;
+
+    if (code !== StatusCodes.NOT_FOUND) {
+        console.error(err.message);
+    }
+
+    try {
+        return await returnWebsitePage(res, null, "page_not_found");
+    } catch (err) {
+        console.log("Redirect to error failed");
+        console.log(err);
+    }
 
     function safeReasonPhrase(code) {
         try {
@@ -185,7 +206,6 @@ app.use((err, req, res, next) => {
         }
     }
 
-    // Direct to the error page if possible instead
     res.status(code).send(safeReasonPhrase(code));
 });
 
