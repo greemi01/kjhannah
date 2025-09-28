@@ -7,7 +7,6 @@ sudo systemctl start kjhanna
 */
 
 import express from 'express';
-import util from 'util';
 import path from 'path';
 import http from 'http';
 import https from 'https';
@@ -108,7 +107,6 @@ async function returnWebsitePage(res, m1, m2, var1, val1) {
         }
 
         if (pageData.page_route && m1) {
-            console.log("should redirect");
             res.redirect(StatusCodes.PERMANENT_REDIRECT, pageData.page_route);
             return;
         }
@@ -240,14 +238,14 @@ async function main() {
             let credentials = { key: privateKey, cert: certificate };
             let httpsServer = https.createServer(credentials, app);
             httpsServer.listen(httpsPort);
-            console.log('Started https on port ' + httpsPort);
+            console.log('Started https://localhost:' + httpsPort);
         } catch (err) {
             console.log(err);
         }
     } else {
         let httpServer = http.createServer(app);
         httpServer.listen(httpPort);
-        console.log('Started http on port ' + httpPort);
+        console.log('Started http://localhost:' + httpPort);
     }
 }
 
