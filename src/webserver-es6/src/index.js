@@ -95,16 +95,6 @@ function securityHeaders(req, res, next) {
 }
 
 
-async function fileExists(f) {
-    try {
-        await fs.access(f, constants.R_OK);
-        return true;
-    } catch (err) {
-        return false;
-    }
-}
-
-
 function replacePlaceholders(text, replacements) {
     return text.replace(/\{%\w+%\}/g, (match) => {
         const key = match.slice(2, -2); // strip {% and %}
@@ -112,13 +102,11 @@ function replacePlaceholders(text, replacements) {
     });
 }
 
-
 async function returnWebsitePage(res, pageName, status = StatusCodes.OK) {
     const pageData = PAGE_INFO.get(pageName);
     if (!pageData) {
         throw new HttpError(StatusCodes.NOT_FOUND);
     }
-
 
     const fileName = dataFile(`${pageData.page_route}.html`);
     const fileText = await fs.readFile(fileName, 'utf8');
@@ -225,28 +213,34 @@ async function main() {
 
         page_template = await fs.readFile(webSiteFile(templateFile), 'utf8');
 
+        let server;
+        let port;
+
         if (IS_PRODUCTION) {
-            try {
-                const httpsPort = (process.argv.length > 2) ? parseInt(process.argv[2]) : DEFAULT_HTTPS_PORT;
-                let privateKey = await fs.readFile(`${PRODUCTION_KEY_FOLDER}/privkey.pem`, 'utf8');
-                let certificate = await fs.readFile(`${PRODUCTION_KEY_FOLDER}/fullchain.pem`, 'utf8');
-                let credentials = { key: privateKey, cert: certificate };
-                let httpsServer = https.createServer(credentials, app);
-                httpsServer.listen(httpsPort);
-                console.log('Started https://localhost:' + httpsPort);
-            } catch (err) {
-                console.log(err);
-            }
+            port = (process.argv.length > 2) ? parseInt(process.argv[2]) : DEFAULT_HTTPS_PORT;
+            const privateKey = await fs.readFile(`${PRODUCTION_KEY_FOLDER}/privkey.pem`, 'utf8');
+            const certificate = await fs.readFile(`${PRODUCTION_KEY_FOLDER}/fullchain.pem`, 'utf8');
+            const credentials = { key: privateKey, cert: certificate };
+            server = https.createServer(credentials, app);
         } else {
-            const httpPort = (process.argv.length > 2) ? parseInt(process.argv[2]) : DEFAULT_HTTP_PORT;
-            let httpServer = http.createServer(app);
-            httpServer.listen(httpPort);
-            console.log('Started http://localhost:' + httpPort);
+            port = (process.argv.length > 2) ? parseInt(process.argv[2]) : DEFAULT_HTTP_PORT;
+            server = http.createServer(app);
         }
+
+        server.listen(port);
+        server.on('error', (err) => {
+            console.error('HTTPS server error:', err);
+        });
+        server.on('listening', () => {
+            const addr = server.address();
+            const host = addr.address === '::' ? 'localhost' : addr.address;
+            const protocol = IS_PRODUCTION ? 'https' : 'http';
+            console.log(`Started ${protocol}://${host}:${addr.port}`);
+        });
+
     } catch (err) {
         console.log(err);
     }
 }
-
 
 main();
