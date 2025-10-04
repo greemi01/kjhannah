@@ -87,7 +87,8 @@ function securityHeaders(req, res, next) {
     if (IS_PRODUCTION) {
         res.setHeader('Strict-Transport-Security', 'max-age=31536000 ; includeSubDomains');
     }
-    res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline';");
+
+    res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';");
     res.setHeader('X-Frame-Options', "SAMEORIGIN");
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -214,29 +215,28 @@ async function main() {
         page_template = await fs.readFile(webSiteFile(templateFile), 'utf8');
 
         let server;
-        let port;
+        let usePort;
+        let protocol;
+
+        const defaultPort = IS_PRODUCTION ? DEFAULT_HTTPS_PORT : DEFAULT_HTTP_PORT;
+        usePort = (process.argv.length > 2) ? parseInt(process.argv[2]) : defaultPort;
 
         if (IS_PRODUCTION) {
-            port = (process.argv.length > 2) ? parseInt(process.argv[2]) : DEFAULT_HTTPS_PORT;
+            protocol = "https";
             const privateKey = await fs.readFile(`${PRODUCTION_KEY_FOLDER}/privkey.pem`, 'utf8');
             const certificate = await fs.readFile(`${PRODUCTION_KEY_FOLDER}/fullchain.pem`, 'utf8');
             const credentials = { key: privateKey, cert: certificate };
             server = https.createServer(credentials, app);
         } else {
-            port = (process.argv.length > 2) ? parseInt(process.argv[2]) : DEFAULT_HTTP_PORT;
             server = http.createServer(app);
+            protocol = "http";
         }
 
-        server.listen(port);
-        server.on('error', (err) => {
-            console.error('HTTPS server error:', err);
-        });
-        server.on('listening', () => {
-            const addr = server.address();
-            const host = addr.address === '::' ? 'localhost' : addr.address;
-            const protocol = IS_PRODUCTION ? 'https' : 'http';
-            console.log(`Started ${protocol}://${host}:${addr.port}`);
-        });
+        await new Promise((resolve, reject) => server.listen(usePort, (err) => err ? reject(err) : resolve()));
+
+        const { address, port } = server.address();
+        const host = address === '::' || address === '0.0.0.0' ? 'localhost' : address;
+        console.log(`Started ${protocol}://${host}:${port}`);
 
     } catch (err) {
         console.log(err);
