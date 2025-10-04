@@ -187,15 +187,19 @@ app.use((_req, _res) => {
 
 app.use(async (err, req, res, _next) => {
     const code = err.status || 500;
+    const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+    const clientIp = req.socket.remoteAddress;
 
     if (code !== StatusCodes.NOT_FOUND) {
-        const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
-        console.log(`Error while processing ${fullUrl}`);
+        console.log(`Error while processing (${clientIp}): ${fullUrl}`);
         console.error(err);
+    } else {
+        console.log(`Page not found (${clientIp}): ${fullUrl}`);
     }
 
     try {
-        return await returnWebsitePage(res, ERROR_PAGE);
+        await returnWebsitePage(res, ERROR_PAGE);
+        return ;
     } catch (err) {
         console.log("Redirect to error page failed");
         console.log(err);
@@ -213,7 +217,7 @@ async function main() {
 
         if (IS_PRODUCTION) {
             try {
-                const httpsPort = (process.argv.length > 2) ?  parseInt(process.argv[2]) : DEFAULT_HTTPS_PORT ;
+                const httpsPort = (process.argv.length > 2) ? parseInt(process.argv[2]) : DEFAULT_HTTPS_PORT;
                 let privateKey = await fs.readFile(`${PRODUCTION_KEY_FOLDER}/privkey.pem`, 'utf8');
                 let certificate = await fs.readFile(`${PRODUCTION_KEY_FOLDER}/fullchain.pem`, 'utf8');
                 let credentials = { key: privateKey, cert: certificate };
@@ -224,7 +228,7 @@ async function main() {
                 console.log(err);
             }
         } else {
-            const httpPort = (process.argv.length > 2) ?  parseInt(process.argv[2]) : DEFAULT_HTTP_PORT ;
+            const httpPort = (process.argv.length > 2) ? parseInt(process.argv[2]) : DEFAULT_HTTP_PORT;
             let httpServer = http.createServer(app);
             httpServer.listen(httpPort);
             console.log('Started http://localhost:' + httpPort);
