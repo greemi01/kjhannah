@@ -10,13 +10,12 @@ import path from 'path';
 import http from 'http';
 import https from 'https';
 import { parse } from "csv-parse/sync";
-import { dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { accessSync, constants } from 'fs';
 import fs from 'fs/promises';
-import { constants } from 'fs';
 import { StatusCodes } from 'http-status-codes';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const DEFAULT_HTTP_PORT = 8080;
 const DEFAULT_HTTPS_PORT = 443;
@@ -25,7 +24,17 @@ const INDEX_PAGE = 'about_kj_hannah_greenberg';
 const ERROR_PAGE = 'page_not_found';
 
 const PRODUCTION_KEY_FOLDER = '/etc/letsencrypt/live/kjhannahgreenberg.net';
-const IS_PRODUCTION = await fileExists(PRODUCTION_KEY_FOLDER);
+
+function fileExistsSync(f) {
+    try {
+        accessSync(f, constants.R_OK);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+const IS_PRODUCTION = fileExistsSync(PRODUCTION_KEY_FOLDER);
 
 const templateFile = 'template_bootstrap.html';
 let page_template;
@@ -78,11 +87,9 @@ function securityHeaders(req, res, next) {
     if (IS_PRODUCTION) {
         res.setHeader('Strict-Transport-Security', 'max-age=31536000 ; includeSubDomains');
     }
-    // the 'data:' is needed because bootstrap includes some inline images (for the menu bar icon)
-    // res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' data:; script-src 'nonce-abAC'");
+    res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline';");
     res.setHeader('X-Frame-Options', "SAMEORIGIN");
     res.setHeader('Referrer-Policy', 'no-referrer');
-    res.setHeader('X-XSS-Protection', '1; mode=block');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     next();
 }
@@ -106,7 +113,7 @@ function replacePlaceholders(text, replacements) {
 }
 
 
-async function returnWebsitePage(res, pageName) {
+async function returnWebsitePage(res, pageName, status = StatusCodes.OK) {
     const pageData = PAGE_INFO.get(pageName);
     if (!pageData) {
         throw new HttpError(StatusCodes.NOT_FOUND);
@@ -122,6 +129,7 @@ async function returnWebsitePage(res, pageName) {
     const page = replacePlaceholders(page_template, vars);
 
     res.setHeader('content-type', 'text/html; charset=utf8');
+    res.status(status);
     res.send(page);
 }
 
@@ -198,14 +206,16 @@ app.use(async (err, req, res, _next) => {
     }
 
     try {
-        await returnWebsitePage(res, ERROR_PAGE);
-        return ;
+        await returnWebsitePage(res, ERROR_PAGE, code);
+        return;
     } catch (err) {
         console.log("Redirect to error page failed");
         console.log(err);
     }
 
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send("Internal Server Error");
+    if (!res.headersSent) {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send("Internal Server Error");
+    }
 });
 
 
