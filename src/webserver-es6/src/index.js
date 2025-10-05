@@ -161,11 +161,25 @@ app.get('/:page', async function (req, res, next) {
     }
 });
 
-// filter out probes to .well-known pages w/o any server side error handling
+
+const IGNORE_PAGES_PATTERNS = [
+  '[.]well-known/.*',             // ACME, Apple, etc.
+  'favicon[.]ico',              // browser favicon
+  'robots[.]txt',               // crawler instructions
+  'apple-touch-icon.*[.]png',   // iOS/macOS icons
+  'browserconfig[.]xml',        // Windows site metadata
+  'sitemap.*[.]xml',            // search engine sitemaps
+  'humans[.]txt',               // harmless info file
+];
+
+
+const IGNORE_PAGES = new RegExp(
+  '^/(' + IGNORE_PAGES_PATTERNS.join('|') + ')$',
+  'i'
+);
+
 app.use((req, res, next) => {
-    if (req.path.startsWith("/.well-known/") ||
-        req.path.startsWith("/favicon.ico")
-    ) {
+    if (IGNORE_PAGES.test(req.path)) {
         return res.sendStatus(404);
     }
     next();
