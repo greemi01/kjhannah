@@ -212,9 +212,9 @@ app.use(async (err, req, res, _next) => {
     try {
         await returnWebsitePage(res, ERROR_PAGE, code);
         return;
-    } catch (err) {
+    } catch (redirectError) {
         console.log("Redirect to error page failed");
-        console.log(err);
+        console.log(redirectError);
     }
 
     if (!res.headersSent) {
