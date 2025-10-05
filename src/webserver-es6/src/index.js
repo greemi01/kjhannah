@@ -163,19 +163,19 @@ app.get('/:page', async function (req, res, next) {
 
 
 const IGNORE_PAGES_PATTERNS = [
-  '[.]well-known/.*',             // ACME, Apple, etc.
-  'favicon[.]ico',              // browser favicon
-  'robots[.]txt',               // crawler instructions
-  'apple-touch-icon.*[.]png',   // iOS/macOS icons
-  'browserconfig[.]xml',        // Windows site metadata
-  'sitemap.*[.]xml',            // search engine sitemaps
-  'humans[.]txt',               // harmless info file
+    '[.]well-known/.*',             // ACME, Apple, etc.
+    'favicon[.]ico',              // browser favicon
+    'robots[.]txt',               // crawler instructions
+    'apple-touch-icon.*[.]png',   // iOS/macOS icons
+    'browserconfig[.]xml',        // Windows site metadata
+    'sitemap.*[.]xml',            // search engine sitemaps
+    'humans[.]txt',               // harmless info file
 ];
 
 
 const IGNORE_PAGES = new RegExp(
-  '^/(' + IGNORE_PAGES_PATTERNS.join('|') + ')$',
-  'i'
+    '^/(' + IGNORE_PAGES_PATTERNS.join('|') + ')$',
+    'i'
 );
 
 app.use((req, res, next) => {
@@ -200,12 +200,13 @@ app.use(async (err, req, res, _next) => {
     const code = err.status || 500;
     const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
     const clientIp = req.socket.remoteAddress;
+    const method = req.method;   // <-- HTTP method (GET, POST, etc.)
 
     if (code !== StatusCodes.NOT_FOUND) {
-        console.log(`Error while processing (${clientIp}): ${fullUrl}`);
+        console.log(`Error ${code} while processing (${clientIp}) [${method}]: ${fullUrl}`);
         console.error(err);
     } else {
-        console.log(`Page not found (${clientIp}): ${fullUrl}`);
+        console.log(`Page not found (${clientIp}) [${method}]: ${fullUrl}`);
     }
 
     try {
