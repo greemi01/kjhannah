@@ -127,11 +127,11 @@ const app = express();
 
 app.use(securityHeaders);
 
-app.get('/', async (req, res) => {
-    await returnWebsitePage(res, INDEX_PAGE);
+app.get('/index.html', (req, res) => {
+    res.redirect(StatusCodes.PERMANENT_REDIRECT, '/');
 });
 
-app.get('/index.html', async (req, res) => {
+app.get('/', async (req, res) => {
     await returnWebsitePage(res, INDEX_PAGE);
 });
 
@@ -197,28 +197,29 @@ app.use((_req, _res) => {
 });
 
 app.use(async (err, req, res, _next) => {
-    const code = err.status || 500;
-    const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
-    const clientIp = req.socket.remoteAddress;
-    const method = req.method;   // <-- HTTP method (GET, POST, etc.)
-
-    if (code !== StatusCodes.NOT_FOUND) {
-        console.log(`Error ${code} while processing (${clientIp}) [${method}]: ${fullUrl}`);
-        console.error(err);
-    } else {
-        console.log(`Page not found (${clientIp}) [${method}]: ${fullUrl}`);
-    }
-
     try {
-        await returnWebsitePage(res, ERROR_PAGE, code);
-        return;
-    } catch (redirectError) {
-        console.log("Redirect to error page failed");
-        console.log(redirectError);
-    }
+        const code = err.status || 500;
+        const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+        const clientIp = req.socket.remoteAddress;
+        const method = req.method;
 
-    if (!res.headersSent) {
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send("Internal Server Error");
+        if (code !== StatusCodes.NOT_FOUND) {
+            console.error(`Error ${code} while processing (${clientIp}) [${method}]: ${fullUrl}\n`, err);
+        } else {
+            console.info(`Page not found (${clientIp}) [${method}]: ${fullUrl}`);
+        }
+
+        await returnWebsitePage(res, ERROR_PAGE, code);
+    } catch (handlerErr) {
+        console.error("Error handler failed:", handlerErr);
+        if (!res.headersSent) {
+            try {
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).send("Internal Server Error");
+            }
+            catch (finalError) {
+                console.error("Fallback response failed:", finalError);
+            }
+        }
     }
 });
 
