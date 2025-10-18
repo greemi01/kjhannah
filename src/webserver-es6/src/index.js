@@ -136,7 +136,12 @@ app.get('/', async (req, res) => {
 });
 
 app.get('/page', async (req, res) => {
-    let m = (req.query.p ?? '').match(/^(\d+)_(\d+)$/);
+    const p = req.query.p ;
+    if (!p || Array.isArray(p)) {
+        throw new HttpError(StatusCodes.NOT_FOUND);
+    }
+
+    let m = p.match(/^(\d+)_(\d+)$/);
     if (!m) {
         throw new HttpError(StatusCodes.NOT_FOUND);
     }
