@@ -1,7 +1,7 @@
 /*
 to update certificate
 sudo systemctl stop kjhanna
-sudo certbot renew5
+sudo certbot renew
 sudo systemctl start kjhanna
 */
 
@@ -45,17 +45,11 @@ const htmlPublic = path.resolve(`${__dirname}/../../../public_html`);
 const dataFolder = path.resolve(`${__dirname}/../../../data`);
 
 async function setupDb() {
-    const rows = parse(await fs.readFile(dataFile('db/pages.csv'), "utf8"), {
+    const rows = parse(await fs.readFile(dataFile('pages.csv'), "utf8"), {
         columns: true,
         skip_empty_lines: true,
     });
     for (const row of rows) {
-        if (row.page_number) {
-            if (PAGE_INFO.has(row.page_number)) {
-                throw new Error(`Duplicate page number ${row.page_number}`);
-            }
-            PAGE_INFO.set(row.page_number, row);
-        }
         if (row.page_route) {
             if (PAGE_INFO.has(row.page_route)) {
                 throw new Error(`Duplicate page route ${row.page_route}`);
@@ -135,28 +129,6 @@ app.get('/', async (req, res) => {
     await returnWebsitePage(res, INDEX_PAGE);
 });
 
-app.get('/page', async (req, res) => {
-    const p = req.query.p ;
-    if (!p || Array.isArray(p)) {
-        throw new HttpError(StatusCodes.NOT_FOUND);
-    }
-
-    let m = p.match(/^(\d+)_(\d+)$/);
-    if (!m) {
-        throw new HttpError(StatusCodes.NOT_FOUND);
-    }
-
-    const [_, m1, m2] = m;
-    const pageData = PAGE_INFO.get(m2);
-
-    if (m1 === '1' && pageData && pageData.page_route) {
-        res.redirect(StatusCodes.PERMANENT_REDIRECT, "/" + pageData.page_route);
-        return;
-    }
-
-    throw new HttpError(StatusCodes.NOT_FOUND);
-});
-
 app.get('/:page', async function (req, res, next) {
     const pageName = req.params.page;
     if (PAGE_INFO.has(pageName)) {
@@ -165,7 +137,6 @@ app.get('/:page', async function (req, res, next) {
         return next();
     }
 });
-
 
 const IGNORE_PAGES_PATTERNS = [
     '[.]well-known/.*',             // ACME, Apple, etc.
@@ -265,3 +236,4 @@ async function main() {
 }
 
 main();
+
