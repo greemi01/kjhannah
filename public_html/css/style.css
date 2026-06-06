@@ -459,6 +459,20 @@ table.bookpicture {
     padding: 0 0 0 7px;
 }
 
+.publications figure {
+  float: right;
+  margin: 0 0 1rem 1rem; /* space on left and bottom so text doesn't hug it */
+}
+
+.publications figure img {
+  float: none;
+  padding: 0;
+}
+
+.publications figure figcaption {
+  font-size: 0.75rem;
+}
+
 .carousel1 {
     position:relative !important;
     margin-left: auto !important;
