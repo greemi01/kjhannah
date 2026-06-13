@@ -471,6 +471,7 @@ table.bookpicture {
 
 .publications figure figcaption {
   font-size: 0.75rem;
+  text-align: center;
 }
 
 .carousel1 {
