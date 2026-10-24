@@ -125,6 +125,10 @@ app.get('/index.html', (req, res) => {
     res.redirect(StatusCodes.PERMANENT_REDIRECT, '/');
 });
 
+app.get('/favicon.ico', (req, res) => {
+    res.sendFile(webSiteFile('images/favicon.ico'), { maxAge: '1d' });
+});
+
 app.get('/', async (req, res) => {
     await returnWebsitePage(res, INDEX_PAGE);
 });
@@ -140,7 +144,6 @@ app.get('/:page', async function (req, res, next) {
 
 const IGNORE_PAGES_PATTERNS = [
     '[.]well-known/.*',             // ACME, Apple, etc.
-    'favicon[.]ico',              // browser favicon
     'robots[.]txt',               // crawler instructions
     'apple-touch-icon.*[.]png',   // iOS/macOS icons
     'browserconfig[.]xml',        // Windows site metadata
